@@ -1,0 +1,56 @@
+﻿<#@ template language="C#" debug="True"  #>
+<#@ output extension=".cs" #>
+<#@ assembly name="System.Data" #>
+<#@ assembly name="System.xml" #>
+<#@ assembly name="System.Core" #>
+<#@ assembly name="$(TargetPath)" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.Data.SqlClient" #>
+<#@ import namespace="System.Data" #>
+<#@ import namespace="System.Linq" #>
+using NUnit.Framework;
+using tSQLt.Helpers;
+
+namespace tSQLt
+{<#		   
+tSQLt.BootstrapForTests.BootstrapTestsDatabase(); 							
+var allTests = tSQLt.Helpers.TestBase.GetTests();
+var testClassNames = allTests.Select(t => t.TestClassName).Distinct();
+foreach (string testClassName in testClassNames)
+{
+	var tests = allTests.Where(t => t.TestClassName == testClassName); 
+#>
+
+	[TestFixture]
+	public class <#= testClassName #>
+	{
+		[TestFixtureSetUp]
+		public void SetupTestFixture()
+		{			
+			TestBase.SetupTestFixture();
+		}
+        
+		[SetUp]
+		public void SetupTest()
+		{
+			TestBase.SetupTest();
+		}
+
+<#
+	foreach (var test in tests)    
+	{
+	
+#>
+		
+		[Test]
+		public void <#= test.GetTestMethodName() #>()
+		{
+			TestBase.RunTest("<#= test.GetFullName() #>");
+		}
+
+<#	} #>
+	}
+<#
+} 
+#>
+}
